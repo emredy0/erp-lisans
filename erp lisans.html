@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise License Manager Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00f2ff;
+            --primary-dim: rgba(0, 242, 255, 0.1);
+            --secondary: #7000ff;
+            --bg-dark: #050505;
+            --surface: #101010;
+            --surface-light: #1a1a1a;
+            --text-main: #ffffff;
+            --text-dim: #888888;
+            --border: #333333;
+            --success: #00ff9d;
+        }
+
+        * { box-sizing: border-box; outline: none; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(112, 0, 255, 0.15) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 242, 255, 0.1) 0%, transparent 20%);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* Ana Panel */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+            width: 1000px;
+            max-width: 100%;
+            height: 600px;
+        }
+
+        @media (max-width: 850px) {
+            .dashboard { grid-template-columns: 1fr; height: auto; }
+        }
+
+        /* Sol Panel - Form */
+        .card {
+            background: rgba(16, 16, 16, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            opacity: 0.5;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        h2 span { color: var(--primary); }
+
+        .form-group { margin-bottom: 1.5rem; }
+        
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        input {
+            width: 100%;
+            background: var(--surface-light);
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 14px 16px;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-dim);
+        }
+
+        .action-btn {
+            position: absolute;
+            right: 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: 0.2s;
+        }
+        .action-btn:hover { color: #fff; border-color: #fff; }
+
+        /* Hızlı Seçim Butonları */
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .preset-btn {
+            background: var(--surface-light);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.85rem;
+        }
+
+        .preset-btn:hover, .preset-btn.active {
+            background: var(--primary-dim);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Generate Butonu */
+        .btn-generate {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--secondary), #4a00e0);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: 0.3s;
+            margin-top: auto;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-generate:hover {
+            box-shadow: 0 0 30px rgba(112, 0, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-generate:active { transform: translateY(0); }
+
+        /* Sağ Panel - Sonuç ve Geçmiş */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .result-box {
+            background: #000;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            position: relative;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .result-label {
+            color: var(--success);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            opacity: 0;
+            transition: 0.3s;
+        }
+
+        .license-display {
+            font-family: 'JetBrains Mono', monospace;
+            word-break: break-all;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            opacity: 0.5;
+            transition: 0.3s;
+        }
+
+        .has-result .result-label { opacity: 1; }
+        .has-result .license-display { opacity: 1; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+
+        .copy-btn {
+            margin-top: 15px;
+            width: 100%;
+            background: var(--surface-light);
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            opacity: 0.5;
+            pointer-events: none;
+            transition: 0.3s;
+        }
+
+        .has-result .copy-btn { opacity: 1; pointer-events: all; }
+        .has-result .copy-btn:hover { background: var(--primary-dim); border-color: var(--primary); }
+
+        /* Geçmiş Listesi */
+        .history-panel {
+            flex: 1;
+            background: var(--surface);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .history-header {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .history-item {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            padding: 10px;
+            border-bottom: 1px solid #222;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            justify-content: space-between;
+        }
+        .history-item:hover { background: var(--surface-light); color: var(--primary); }
+        .history-date { color: var(--text-dim); }
+
+        /* Toast Bildirim */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--surface-light);
+            border-left: 4px solid var(--primary);
+            color: #fff;
+            padding: 15px 25px;
+            border-radius: 4px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            z-index: 999;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .toast.show { transform: translateX(0); }
+        .toast.error { border-left-color: #ff4757; }
+
+        /* Yardımcı Yazılar */
+        .shortcuts {
+            margin-top: 10px;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-align: center;
+        }
+        kbd {
+            background: #222;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 2px 5px;
+            font-family: monospace;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <div class="card">
+        <h2><span>LOCK</span>MASTER V2</h2>
+        
+        <div class="form-group">
+            <label>MÜŞTERİ DONANIM KİMLİĞİ (HWID)</label>
+            <div class="input-wrapper">
+                <input type="text" id="hwid" placeholder="Örn: 4C4C4544-004D..." autocomplete="off">
+                <button class="action-btn" onclick="pasteHWID()">YAPIŞTIR</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>LİSANS SÜRESİ (GÜN)</label>
+            <div class="preset-grid">
+                <button class="preset-btn" onclick="setDays(30)">30 Gün</button>
+                <button class="preset-btn" onclick="setDays(90)">3 Ay</button>
+                <button class="preset-btn active" onclick="setDays(365)">1 Yıl</button>
+                <button class="preset-btn" onclick="setDays(36500)">Ömür</button>
+            </div>
+            <input type="number" id="days" value="365">
+        </div>
+
+        <button class="btn-generate" onclick="generateLicense()">
+            Lisans Anahtarı Oluştur
+        </button>
+        
+        <div class="shortcuts">
+            <kbd>ENTER</kbd> Üret &nbsp;|&nbsp; <kbd>ESC</kbd> Temizle
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="result-box" id="resultContainer">
+            <div class="result-label">ŞİFRELENMİŞ LİSANS</div>
+            <div class="license-display" id="licenseDisplay">
+                // Bekleniyor...
+            </div>
+            <button class="copy-btn" onclick="copyLicense()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 4H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2v-2M16 4h2a2 2 0 012 2v4M21 14H10l5.5-5.5M15.5 19.5L10 14"/></svg>
+                PANAYA KOPYALA
+            </button>
+            <small id="expiryInfo" style="margin-top:10px; color:#555; font-size: 0.75rem; text-align: center;"></small>
+        </div>
+
+        <div class="history-panel">
+            <div class="history-header">Son İşlemler</div>
+            <div id="historyList">
+                </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast">
+    <span id="toastIcon">✔</span>
+    <span id="toastMsg">İşlem başarılı.</span>
+</div>
+
+<script>
+    // --- CONFİG ---
+    const LICENSE_SALT = 'TICARI_UYGULAMA_2026_HARDWARE_LOCK_SECRET_SALT_V1';
+    
+    // --- UI FONKSİYONLARI ---
+    
+    // Gün butonları için aktif sınıfını değiştir
+    function setDays(val) {
+        document.getElementById('days').value = val;
+        document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+
+    // Pano işlemleri
+    async function pasteHWID() {
+        try {
+            const text = await navigator.clipboard.readText();
+            document.getElementById('hwid').value = text;
+            showToast('HWID Yapıştırıldı', 'info');
+        } catch (err) {
+            showToast('Panoya erişilemedi', 'error');
+        }
+    }
+
+    function copyLicense() {
+        const key = document.getElementById('licenseDisplay').innerText;
+        if (!key || key.startsWith('//')) return;
+        
+        navigator.clipboard.writeText(key).then(() => {
+            showToast('Lisans kopyalandı!');
+        });
+    }
+
+    function showToast(msg, type = 'success') {
+        const toast = document.getElementById('toast');
+        const icon = document.getElementById('toastIcon');
+        
+        document.getElementById('toastMsg').innerText = msg;
+        
+        if (type === 'error') {
+            toast.classList.add('error');
+            icon.innerText = '✖';
+        } else {
+            toast.classList.remove('error');
+            icon.innerText = '✔';
+        }
+
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function addToHistory(hwid, key) {
+        const list = document.getElementById('historyList');
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        
+        // Kısa gösterim
+        const shortHwid = hwid.substring(0, 15) + '...';
+        const time = new Date().toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
+        
+        item.innerHTML = `<span>${shortHwid}</span> <span class="history-date">${time}</span>`;
+        item.onclick = () => {
+            document.getElementById('licenseDisplay').innerText = key;
+            document.getElementById('resultContainer').classList.add('has-result');
+            showToast('Geçmişten yüklendi', 'info');
+        };
+        
+        list.prepend(item);
+    }
+
+    // --- ŞİFRELEME MANTIĞI (ORİJİNAL KODUN KORUNDUĞU YER) ---
+    async function generateLicense() {
+        const hwid = document.getElementById('hwid').value.trim();
+        const days = parseInt(document.getElementById('days').value) || 365;
+
+        if (hwid.length < 5) {
+            showToast("Geçerli bir HWID girin!", 'error');
+            document.getElementById('hwid').focus();
+            return;
+        }
+
+        const btn = document.querySelector('.btn-generate');
+        const originalText = btn.innerText;
+        btn.innerText = "ŞİFRELENİYOR...";
+        btn.disabled = true;
+
+        // Bitiş tarihi hesapla
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + days);
+        const dateStr = endDate.toISOString().split('T')[0];
+        const rawData = `${hwid}|${dateStr}`;
+
+        try {
+            // 1. Anahtarı Hazırla (SHA-256)
+            const encoder = new TextEncoder();
+            const saltBuffer = encoder.encode(LICENSE_SALT);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', saltBuffer);
+            
+            // 2. IV Oluştur (16 Byte)
+            const iv = crypto.getRandomValues(new Uint8Array(16));
+            
+            // 3. Şifreleme Anahtarını İçe Aktar
+            const key = await crypto.subtle.importKey(
+                'raw', hashBuffer, { name: 'AES-CBC' }, false, ['encrypt']
+            );
+
+            // 4. Şifrele
+            const encryptedBuffer = await crypto.subtle.encrypt(
+                { name: 'AES-CBC', iv: iv },
+                key,
+                encoder.encode(rawData)
+            );
+
+            // 5. Hex Formatına Çevir
+            const ivHex = Array.from(iv).map(b => b.toString(16).padStart(2, '0')).join('');
+            const dataHex = Array.from(new Uint8Array(encryptedBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+            
+            const finalKey = `${ivHex}:${dataHex}`;
+
+            // UI Güncelle
+            document.getElementById('licenseDisplay').innerText = finalKey;
+            document.getElementById('expiryInfo').innerText = `GEÇERLİLİK: ${dateStr}`;
+            document.getElementById('resultContainer').classList.add('has-result');
+            
+            addToHistory(hwid, finalKey);
+            showToast('Lisans başarıyla üretildi!');
+
+        } catch (e) {
+            console.error(e);
+            showToast("Kritik şifreleme hatası!", 'error');
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    // --- KLAVYE KISAYOLLARI ---
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            generateLicense();
+        }
+        if (e.key === 'Escape') {
+            document.getElementById('hwid').value = '';
+            document.getElementById('licenseDisplay').innerText = '// Bekleniyor...';
+            document.getElementById('resultContainer').classList.remove('has-result');
+            document.getElementById('hwid').focus();
+        }
+    });
+
+</script>
+
+</body>
+</html>
